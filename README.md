@@ -2,6 +2,8 @@
 
 These custom Unity editor scripts enhance the functionality of Animator Controllers and Animator Override Controllers by providing an improved interface for managing animation clips and overrides in the Inspector.
 
+![Editor Inspector](EditorInspector.png)
+
 ## Animator Controller Editor
 
 The Animator Controller Editor customizes the Unity Animator Controller inspector with the following features:
