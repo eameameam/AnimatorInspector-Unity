@@ -518,13 +518,25 @@ namespace Editor
             {
                 if (state.motion is BlendTree blendTree)
                 {
-                    DrawElementBackground($"{indent}BlendTree State: {state.name}", BackgroundColor);
+                    var labelStyle = new GUIStyle(EditorStyles.label);
+                    if (blendTree == null)
+                    {
+                        GUI.backgroundColor = new Color(1f, 0.5f, 0.5f);
+                        labelStyle.normal.textColor = new Color(1, 0.7f, 0.7f);
+                    }
+                    DrawElementBackground($"{indent}BlendTree State: {state.name}", BackgroundColor, labelStyle);
                     DrawBlendTree(blendTree);
                 }
                 else
                 {
                     EditorGUILayout.BeginHorizontal();
-                    DrawElementBackground($"{indent}State: {state.name}", BackgroundColor);
+                    var labelStyle = new GUIStyle(EditorStyles.label);
+                    if (state.motion == null)
+                    {
+                        GUI.backgroundColor = new Color(1f, 0.5f, 0.5f); 
+                        labelStyle.normal.textColor = new Color(1, 0.7f, 0.7f);
+                    }
+                    DrawElementBackground($"{indent}State: {state.name}", BackgroundColor, labelStyle);
                     EditorGUI.BeginChangeCheck();
                     var newMotion = (Motion)EditorGUILayout.ObjectField(
                         state.motion,
@@ -537,19 +549,21 @@ namespace Editor
                         state.motion = newMotion;
                         EditorUtility.SetDirty(state);
                     }
+                    GUI.backgroundColor = Color.white;
                     EditorGUILayout.EndHorizontal();
                 }
             }
         }
 
-        private void DrawElementBackground(string label, Color backgroundColor)
+        private void DrawElementBackground(string label, Color backgroundColor, GUIStyle style = null)
         {
             var content = new GUIContent(label);
-            var height = EditorStyles.label.CalcHeight(content, EditorGUIUtility.currentViewWidth);
-            Rect rect = GUILayoutUtility.GetRect(content, EditorStyles.label, GUILayout.Height(height));
+            var height = style != null ? style.CalcHeight(content, EditorGUIUtility.currentViewWidth) : EditorStyles.label.CalcHeight(content, EditorGUIUtility.currentViewWidth);
+            Rect rect = GUILayoutUtility.GetRect(content, style ?? EditorStyles.label, GUILayout.Height(height));
             EditorGUI.DrawRect(rect, backgroundColor);
-            EditorGUI.LabelField(rect, content, EditorStyles.boldLabel);
+            EditorGUI.LabelField(rect, content, style ?? EditorStyles.label);
         }
+
 
         private void DrawBlendTree(BlendTree blendTree)
         {

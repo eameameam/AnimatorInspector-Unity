@@ -115,18 +115,29 @@ namespace Editor
             foreach (var pair in overridesList)
             {
                 GUILayout.BeginHorizontal();
-                GUILayout.Label(pair.Key.name, GUILayout.Width(EditorGUIUtility.currentViewWidth / HALF_WIDTH_MODIFIER)); 
+
+                var labelStyle = new GUIStyle(EditorStyles.label);
+                if (pair.Value == null)
+                {
+                    GUI.backgroundColor = new Color(1f, 0.5f, 0.5f);
+                    labelStyle.normal.textColor = new Color(1, 0.7f, 0.7f);
+                }
+
+                GUILayout.Label(pair.Key.name, labelStyle, GUILayout.Width(EditorGUIUtility.currentViewWidth / HALF_WIDTH_MODIFIER));
+
                 var newOverrideClip = (AnimationClip)EditorGUILayout.ObjectField(
-                    pair.Value, 
-                    typeof(AnimationClip), 
-                    false, 
+                    pair.Value,
+                    typeof(AnimationClip),
+                    false,
                     GUILayout.MaxWidth(EditorGUIUtility.currentViewWidth / HALF_WIDTH_MODIFIER)
                 );
                 if (newOverrideClip != pair.Value)
                 {
                     _overrideController[pair.Key.name] = newOverrideClip;
-                    GUI.changed = true; 
+                    GUI.changed = true;
                 }
+
+                GUI.backgroundColor = Color.white;
                 GUILayout.EndHorizontal();
             }
         }
