@@ -10,6 +10,8 @@ namespace Editor
     {
         private AnimatorOverrideController _overrideController;
         private SerializedProperty _runtimeAnimatorControllerProperty;
+        private AnimatorOverrideController _previousOverrideController;
+        private List<KeyValuePair<AnimationClip, AnimationClip>> _previousOverridesList;
 
         private const float HALF_WIDTH_MODIFIER = 2.2f;
 
@@ -17,17 +19,64 @@ namespace Editor
         {
             _overrideController = (AnimatorOverrideController)target;
             _runtimeAnimatorControllerProperty = serializedObject.FindProperty("m_Controller");
+            EditorApplication.update += OnEditorUpdate;
+            _previousOverridesList = GetSortedOverridesList();
+        }
+
+        private void OnEditorUpdate()
+        {
+            if (CheckForAnimatorChange() || CheckForOverridesChange() || GUI.changed)
+            {
+                Repaint();
+            }
+        }
+
+        private bool CheckForAnimatorChange()
+        {
+            if (_overrideController != (AnimatorOverrideController)target)
+            {
+                _overrideController = (AnimatorOverrideController)target;
+                return true;
+            }
+            return false;
+        }
+
+        private bool CheckForOverridesChange()
+        {
+            var currentOverridesList = GetSortedOverridesList();
+            if (!ListsAreEqual(_previousOverridesList, currentOverridesList))
+            {
+                _previousOverridesList = currentOverridesList;
+                return true;
+            }
+            return false;
+        }
+
+        private bool ListsAreEqual(List<KeyValuePair<AnimationClip, AnimationClip>> list1, List<KeyValuePair<AnimationClip, AnimationClip>> list2)
+        {
+            if (list1.Count != list2.Count) return false;
+            for (int i = 0; i < list1.Count; i++)
+            {
+                if (list1[i].Key != list2[i].Key || list1[i].Value != list2[i].Value)
+                    return false;
+            }
+            return true;
         }
 
         public override void OnInspectorGUI()
         {
-            serializedObject.Update();
+            serializedObject.Update(); 
 
             DrawAnimatorControllerField();
             DrawOverridesTable();
 
             GUILayout.Space(10);
             DrawDragAndDropArea();
+
+            if (GUI.changed) 
+            {
+                EditorUtility.SetDirty(target); 
+            }
 
             serializedObject.ApplyModifiedProperties();
         }
@@ -76,6 +125,7 @@ namespace Editor
                 if (newOverrideClip != pair.Value)
                 {
                     _overrideController[pair.Key.name] = newOverrideClip;
+                    GUI.changed = true; 
                 }
                 GUILayout.EndHorizontal();
             }
@@ -84,7 +134,7 @@ namespace Editor
         private void DrawDragAndDropArea()
         {
             GUILayout.Label("Drag and Drop Animation Clips here");
-            Rect dropArea = GUILayoutUtility.GetRect(0.0f, 50.0f, GUILayout.ExpandWidth(true));
+            Rect dropArea = AnimatorControllerEditor.DropArea;
             GUI.Box(dropArea, "Drop Clips Here");
             HandleDragAndDrop(dropArea);
         }
